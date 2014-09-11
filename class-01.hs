@@ -94,14 +94,15 @@ avg3 a b c = (a+b+c)/3
   классу типов Num (имеет экземпляр класса типов Num, является числовым типом).
 
   Определите и сохраните в этом файле типы следующих выражений:
+					Class		Type
    5					Num a		Integer
    5.0					Fractional a	Double
    sqrt 4				Floating a	Double
    sqrt 4.0				Floating a	Double
    2+3					Num a		Integer
-   5 < 7				Bool
+   5 < 7						Bool
    if 2 > 3 then 7 else 5		Num a		Integer
-   5 > 6 && False			Bool
+   5 > 6 && False					Bool
 
    Команда ":set +t" включает режим, при котором печатается тип каждого вычисляемого выражения.
    Команда ":set +s" включает режим, при котором печатается время вычисления каждого выражения.
@@ -187,9 +188,9 @@ dayOfWeek _ = error "AAAA!!!!"
 -- Определение знака числа (-1, 0, 1). Класс типов Ord определяет операции сравнения.
 sign :: (Num a, Ord a) => a -> Int
 sign a
-   | a < 0 = -1
-   | a == 0 = 0
-   | otherwise = 1
+  | a < 0 = -1
+  | a == 0 = 0
+  | otherwise = 1
 
 {-
    а) Найти значение функции f(x), вычисляемое по правилу:
@@ -198,12 +199,21 @@ sign a
           4,    если x ≥ 2.
 -}
 
-eval_f = undefined
+eval_f :: (Num a, Ord a) => a -> a
+eval_f x
+  | x <= 0 = -x
+  | x >= 2 = 4
+  | otherwise = x*x
+
 
 -- б) Написать функцию, возвращающую текстовую характеристику ("hot", "warm", "cool", "cold")
 -- по заданному значению температуры в градусах Цельсия.
 describeTemperature :: Double -> String
-describeTemperature = undefined
+describeTemperature t
+  | t >= 30 = "hot"
+  | t >= 20 = "warm"
+  | t >= 10 = "cool"
+  | otherwise = "cold" 
 
 {- 
    в) (*) Дан список температур в градусах Фаренгейта. Вывести для каждого значения
@@ -219,38 +229,83 @@ describeTemperature = undefined
 -- 7) Рекурсия
 
 -- Пример. Вычислить сумму всех целых чисел от 1 до n (где n >= 1):
+sum_n :: (Integral a, Ord a) => a -> a
 sum_n 1 = 1
 sum_n n
   | n > 1 = n + sum_n (n-1)
   | otherwise = error "n should be >= 1"
 
 -- а) Вычислить сумму всех целых чисел от a до b включительно.
-sum_ab = undefined
+sum_ab :: (Integral a, Ord a) => a -> a -> a
+sum_ab a b
+  | a == b = a
+  | b > a = a + sum_ab (a+1) b
+  | otherwise = error "a should be <= b"
+
+   
 
 {-
    б) Числовая последовательность определяется следующим образом:
       a1 = 1, a2 = 2, a3 = 3, a_k = a_{k−1} + a_{k−2} − 2*a_{k−3}, k = 4, 5, ...
       Вычислить её n-й элемент.
 -}
-eval_a_n = undefined
+
+eval_a_n :: (Integral a, Ord a) => a -> a 
+eval_a_n 1 = 1
+eval_a_n 2 = 2
+eval_a_n 3 = 3
+eval_a_n n
+  | n > 0 = eval_a_n (n-1) + eval_a_n (n-2) - 2 * eval_a_n (n-3)
+  | otherwise = error "n should be > 0" 
 
 -- в) Вычислить, пользуясь рекурсией, n-ю степень числа a (n - целое):
-pow = undefined
+pow :: (Integral n, Ord n, Ord a, Fractional a) => a -> n -> a
+pow 0 n = 0
+pow a 0 = 1
+pow a n
+  | n > 0 = a * pow a (n-1)
+  | otherwise = 1 / pow a (-n)
+
 
 -- г) Пользуясь ранее написанной функцией pow, вычислить сумму: 1^k + 2^k + ... + n^k.
-sum_nk = undefined
+sum_nk :: (Integral k, Ord k, Fractional n, Ord n) => n -> k -> n 
+sum_nk 0 k = 0
+sum_nk n k
+  | n > 0 = pow n k + sum_nk (n-1) k 
+  | otherwise = error "n should be >= 0"
+
 
 -- д) Сумма факториалов чисел от 1 до n.
+sum_fact :: (Integral n, Ord n) => n -> n
 sum_fact 1 = 1
-sum_fact n = undefined
+sum_fact n 
+  | n > 0 = fact n + sum_fact (n-1)
+  | otherwise = error "n should be >= 0"
   where
-    fact n = undefined
+    fact :: (Integral n, Ord n) => n -> n
+    fact 1 = 1
+    fact n = n * fact (n-1)
+
 
 -- е) Количество цифр целого числа
-number_digits = undefined
+number_digits :: (Integral a) => a -> Integer
+number_digits x
+  | x < 0 = number_digits (- x)
+  | x < 10 = 1
+  | otherwise = 1 + number_digits (x `div` 10)
 
 -- ж) Проверить, является ли заданное число простым.
-isPrime = undefined
+isPrime :: Integer  -> Bool
+isPrime 1 = False
+isPrime p
+  | p < 0 = error "p should be > 0"
+  | otherwise = sub_isPrime 2 
+  where
+    sub_isPrime :: Integer -> Bool
+    sub_isPrime k
+      | k*k > p = True
+      | p `mod` k == 0 = False
+      | otherwise = sub_isPrime (k+1) 
 
 -- 8) Разное
 
@@ -262,6 +317,10 @@ isPrime = undefined
   а 1200 и 2000 — являются).
 -}
 
-nDays year = undefined
+nDays :: (Integral a) => a -> Integer
+nDays year 
+  | isLeap = 366
+  | otherwise = 365
   where
-    isLeap = undefined
+    isLeap :: Bool 
+    isLeap = year `mod` 4 == 0 && (year `mod` 100 /= 0 || year `mod` 400 == 0) 
